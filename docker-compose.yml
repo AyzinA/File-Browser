@@ -1,0 +1,16 @@
+services:
+  filebrowser:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - ROOT_DIR=/data
+      - HOST=0.0.0.0
+      - PORT=8080
+      - USE_TLS=false
+      - CERT_FILE=/certs/cert.pem
+      - KEY_FILE=/certs/key.pem
+    volumes:
+      - ${UPLOAD_DIR}:/data:ro
+      - ./certs:/certs:ro
+    restart: unless-stopped

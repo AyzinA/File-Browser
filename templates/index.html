@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>File Browser</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">File Browser</div>
+
+    <!-- prettier search -->
+    <form class="search" method="get" action="/">
+      <input type="hidden" name="path" value="{{.Path}}" />
+      <input name="q" value="{{.Q}}" placeholder="Search files..." />
+      <button class="btn">Search</button>
+    </form>
+  </div>
+</header>
+
+<main class="container">
+  {{if .Breadcrumbs}}
+  <nav class="crumbs">
+    <a href="/">/</a>
+    {{range .Breadcrumbs}}
+      <span>/</span><a href="{{.URL}}">{{.Name}}</a>
+    {{end}}
+  </nav>
+  {{end}}
+
+  <div class="controls">
+    <!-- New: Go to root button -->
+    <a class="btn faint" href="/">🏠 Root</a>
+
+    <!-- New: Single Sort toggle -->
+    <button id="sortToggle" class="btn">
+      {{if eq .Sort "name"}}Sort: Name{{else if eq .Sort "size"}}Sort: Size{{else}}Sort: Modified{{end}}
+    </button>
+
+    <!-- Existing: order toggle, restyled -->
+    {{if eq .Order "asc"}}
+      <a class="btn outline" href="/?path={{.Path}}&q={{.Q}}&sort={{.Sort}}&order=desc">Order: asc</a>
+    {{else}}
+      <a class="btn outline" href="/?path={{.Path}}&q={{.Q}}&sort={{.Sort}}&order=asc">Order: desc</a>
+    {{end}}
+  </div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Size</th>
+          <th>Modified</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{if .Rows}}
+          {{range .Rows}}
+          <tr>
+            <td>
+              {{if .IsDir}}
+                📁 <a href="/?path={{.RelPath}}">{{.Name}}</a>
+              {{else}}
+                📄 {{.Name}}
+              {{end}}
+            </td>
+            <td>{{human .SizeBytes .IsDir}}</td>
+            <td>{{.ModTime}}</td>
+            <td>
+              {{if not .IsDir}}
+                <a class="btn small" href="/download?path={{.RelPath}}">Download</a>
+              {{end}}
+            </td>
+          </tr>
+          {{end}}
+        {{else}}
+          <tr><td colspan="4" class="muted">No files.</td></tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<!-- tiny helper script for Sort toggle -->
+<script>
+(function () {
+  const btn = document.getElementById('sortToggle');
+  if (!btn) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const curSort = (params.get('sort') || '{{.Sort}}' || 'name').toLowerCase();
+
+  btn.addEventListener('click', () => {
+    const order = (params.get('order') || '{{.Order}}' || 'asc').toLowerCase();
+    const path  = params.get('path') || '{{.Path}}';
+    const q     = params.get('q') || '{{.Q}}';
+
+    const next = curSort === 'name' ? 'size' : (curSort === 'size' ? 'mod' : 'name');
+
+    const p = new URLSearchParams();
+    if (path) p.set('path', path);
+    if (q)    p.set('q', q);
+    p.set('sort', next);
+    p.set('order', order);
+
+    window.location.search = p.toString();
+  });
+})();
+</script>
+</body>
+</html>
