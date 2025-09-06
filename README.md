@@ -41,7 +41,7 @@ It allows users to browse and download files from a specified directory through 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourname/file-browser.git
+git clone https://github.com/AyzinA/File-Browser.git
 cd file-browser
 ```
 
